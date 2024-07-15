@@ -1,4 +1,4 @@
-package com.firewolf.cont.base;
+package com.firewolf.cont.global;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

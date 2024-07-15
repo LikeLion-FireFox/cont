@@ -21,6 +21,7 @@ spring:
 
 logging:
   level:
+    com.firewolf.cont : info
     org.hibernate.SQL : debug
     org.springframework.orm.jpa.JpaTransactionManager: debug
 #    org.hibernate.type : trace

@@ -1,6 +1,6 @@
 package com.firewolf.cont.user.entity;
 
-import com.firewolf.cont.base.BaseEntity;
+import com.firewolf.cont.global.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

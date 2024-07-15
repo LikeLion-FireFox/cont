@@ -143,7 +143,7 @@ public class KakaoService {
 
         session.setAttribute("memberId", member.getId());
         return LoginResponseDto.builder()
-                .id(id)
+                .id(member.getId())
                 .nickname(nickname)
                 .build();
     }

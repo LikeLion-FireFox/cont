@@ -4,6 +4,7 @@ import com.firewolf.cont.user.dto.LoginDto.LoginResponseDto;
 import com.firewolf.cont.user.service.KakaoService;
 import com.firewolf.cont.user.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,10 +26,15 @@ public class MainPageController {
     @GetMapping("")
     public ResponseEntity<LoginResponseDto> mainPage(
             HttpServletRequest request,
+            HttpServletResponse servletResponse,
             @SessionAttribute(name = "memberId", required = false) Long memberId
     ) throws Exception {
         if(request.getParameter("code")!=null)
             return ResponseEntity.ok().body(kakaoService.getKakaoInfo(request.getParameter("code"),request));
+        else if(request.getParameter("code")==null && memberId == null) {
+            servletResponse.sendRedirect("/loginPage");
+            return null;
+        }
         else
             return ResponseEntity.ok().body(memberService.getMemberInfo(memberId));
     }
