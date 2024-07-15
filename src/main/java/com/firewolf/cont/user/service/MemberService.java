@@ -54,4 +54,10 @@ public class MemberService {
         System.out.println("email = " + email);
         return memberRepository.findByAccountEmail(email).isPresent();
     }
+
+    public boolean isKakaoUser(Long memberId){
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(NO_MEMBER_CONFIGURED_500));
+        return member.getIsKakaoMember();
+    }
 }

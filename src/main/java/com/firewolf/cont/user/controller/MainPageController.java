@@ -5,16 +5,18 @@ import com.firewolf.cont.user.service.KakaoService;
 import com.firewolf.cont.user.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("mainPage")
+@Slf4j
 public class MainPageController {
 
     private final KakaoService kakaoService;
@@ -31,11 +33,28 @@ public class MainPageController {
     ) throws Exception {
         if(request.getParameter("code")!=null)
             return ResponseEntity.ok().body(kakaoService.getKakaoInfo(request.getParameter("code"),request));
-        else if(request.getParameter("code")==null && memberId == null) {
+        else if(request.getParameter("code")==null && memberId == null) { //로그인 되지 않은 회원
             servletResponse.sendRedirect("/loginPage");
             return null;
         }
         else
             return ResponseEntity.ok().body(memberService.getMemberInfo(memberId));
+    }
+
+    @PostMapping("/logout")
+    public void logout(
+            HttpServletRequest servletRequest,
+            HttpServletResponse servletResponse,
+            @SessionAttribute(name = "memberId") Long memberId,
+            @SessionAttribute(name = "kakaoToken", required = false) String kakaoToken
+    ) throws IOException {
+        HttpSession session = servletRequest.getSession(false);
+        log.info("session = {}",session.getAttributeNames());
+        if(memberService.isKakaoUser(memberId)) {
+            kakaoService.logout(kakaoToken);
+            session.removeAttribute("kakaoToken");
+        }
+        session.removeAttribute("memberId"); // common (kakao user, nonkakao user)
+        servletResponse.sendRedirect("/loginPage");
     }
 }
