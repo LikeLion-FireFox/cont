@@ -5,7 +5,9 @@
 </head>
 <body>
 <div>
-    <p><a th:href="@{|${kakaoUrl}|}">카카오로그인</a></p>
+        <form th:action="@{/mainPage/logout}" method="post">
+            <button th:onclick="" type="submit"></button>삭제
+        </form>
 </div>
 </body>
 </html>

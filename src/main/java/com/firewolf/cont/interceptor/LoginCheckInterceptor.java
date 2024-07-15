@@ -13,7 +13,7 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
         HttpSession session = request.getSession(false);
         if(session == null || session.getAttribute("memberId")==null){
             log.info("미인증 사용자 요청");
-            response.sendRedirect("/loginPage"); //redirect 는 get 요청 사용
+            response.sendRedirect("/loginPage");
             return false;
         }
         return true;

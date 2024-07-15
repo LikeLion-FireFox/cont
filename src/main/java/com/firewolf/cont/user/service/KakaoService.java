@@ -1,8 +1,9 @@
 package com.firewolf.cont.user.service;
 
-import com.firewolf.cont.exception.CustomErrorCode;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firewolf.cont.exception.CustomException;
-import com.firewolf.cont.user.dto.LoginDto;
 import com.firewolf.cont.user.dto.LoginDto.LoginResponseDto;
 import com.firewolf.cont.user.entity.Member;
 import com.firewolf.cont.user.repository.MemberRepository;
@@ -28,7 +29,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import static com.firewolf.cont.exception.CustomErrorCode.KAKAO_API_CALL_FAILED;
-import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
 @Service
@@ -141,10 +141,39 @@ public class KakaoService {
                         .build())
         );
 
+        session.setAttribute("kakaoToken",accessToken);
         session.setAttribute("memberId", member.getId());
+        log.info("session attributes = {}",session.getAttributeNames());
         return LoginResponseDto.builder()
                 .id(member.getId())
                 .nickname(nickname)
                 .build();
+    }
+
+
+    public void logout(String accessToken) throws JsonProcessingException {
+        // HTTP Header 생성
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + accessToken);
+        headers.add("Content-type", "application/x-www-form-urlencoded");
+
+        // HTTP 요청 보내기
+        HttpEntity<MultiValueMap<String, String>> kakaoLogoutRequest = new HttpEntity<>(headers);
+        RestTemplate rt = new RestTemplate();
+        ResponseEntity<String> response = rt.exchange(
+                "https://kapi.kakao.com/v1/user/logout",
+                HttpMethod.POST,
+                kakaoLogoutRequest,
+                String.class
+        );
+
+
+        // kakao server 로부터 받은 responseBody 정보 (test용)
+        String responseBody = response.getBody();
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(responseBody);
+
+        Long id = jsonNode.get("id").asLong();
+        log.info("반환 id = {}",id);
     }
 }
