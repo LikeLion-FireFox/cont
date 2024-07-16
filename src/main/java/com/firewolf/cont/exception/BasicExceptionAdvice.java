@@ -9,6 +9,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.reactive.resource.NoResourceFoundException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -62,6 +64,25 @@ public class BasicExceptionAdvice {
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
             response.getDefaultMessages().put(fieldError.getField(),fieldError.getDefaultMessage());
         }
+        return ResponseEntity
+                .status(response.getStatus())
+                .body(response);
+    }
+
+    @ExceptionHandler({
+            NoHandlerFoundException.class,
+            NoResourceFoundException.class
+    })
+    public ResponseEntity<BasicErrorResponse> handleNoResource(
+            Exception ex
+    ){
+        log.error("ex = {}",ex.getMessage());
+        log.error("detail message = ",ex);
+        BasicErrorResponse response = BasicErrorResponse.builder()
+                .errorMessage(ex.getMessage())
+                .status(HttpStatus.NOT_FOUND)
+                .timeStamp(LocalDateTime.now())
+                .build();
         return ResponseEntity
                 .status(response.getStatus())
                 .body(response);
