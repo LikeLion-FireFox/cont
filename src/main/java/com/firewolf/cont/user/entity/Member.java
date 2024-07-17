@@ -1,10 +1,13 @@
 package com.firewolf.cont.user.entity;
 
+import com.firewolf.cont.contract.entity.Contract;
 import com.firewolf.cont.global.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -30,5 +33,8 @@ public class Member extends BaseEntity {
     private String accountEmail; //공통 (kakao 로그인 시에는 선택사항)
 
     private LocalDate birthday; // year - month - day
+
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
+    private List<Contract> contracts = new ArrayList<>();
 
 }

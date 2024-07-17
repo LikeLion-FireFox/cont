@@ -1,6 +1,6 @@
 package com.firewolf.cont.contract.controller;
 
-import com.firewolf.cont.contract.dto.ContractDto.ContractRequest;
+import com.firewolf.cont.contract.dto.ContractRequest;
 import com.firewolf.cont.contract.service.ContractService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class ChatController {
     @PostMapping("")
     public void chat(
             @SessionAttribute("memberId") Long memberId,
-            @RequestBody ContractRequest contractRequest,
+            @ModelAttribute ContractRequest contractRequest,
             HttpServletResponse servletResponse
     ) throws IOException {
         String chatResponse = contractService.chatAndSave(memberId, contractRequest);

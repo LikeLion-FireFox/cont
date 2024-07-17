@@ -11,6 +11,11 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 @Getter
 public enum CustomErrorCode {
 
+    //contract
+    EXCEEDED_CONTENT_LENGTH_400("계약서 길이 초과, 최대 단어 수는 약 1500개",BAD_REQUEST),
+    CONTRACT_FORMAT_ERROR_400("계약서 형식이 아닌 파일",BAD_REQUEST),
+    JSON_PARSE_EXCEPTION_500("JSON 객체 변환 오류",INTERNAL_SERVER_ERROR),
+
     //kakao
     KAKAO_API_CALL_FAILED("카카오 로그인 API 오류",INTERNAL_SERVER_ERROR),
     //member

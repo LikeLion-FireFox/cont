@@ -25,19 +25,25 @@ public class Contract extends BaseEntity {
     @Column(name = "contract_id")
     private Long id;
 
-    private Boolean isLegal;
+    @Enumerated(STRING)
+    private Legality legality;
 
     @Enumerated(STRING)
     private ContractType contractType;
 
-    @Column(length = 5000)
-    private String request_prompt;
+//    @Column(length = 5000)
+//    private String request_prompt;
 
-    @Column(length = 5000)
-    private String response_content;
+//    @Column(length = 5000)
+//    private String response_content;
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    public void addMember(Member member){
+        this.member=member;
+        member.getContracts().add(this);
+    }
 
 }

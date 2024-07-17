@@ -1,22 +1,26 @@
 package com.firewolf.cont.contract.service;
 
-import com.firewolf.cont.contract.dto.ContractDto.ContractRequest;
+import com.firewolf.cont.contract.dto.ContractRequest;
 import com.firewolf.cont.contract.dto.gpt.GptRequestDto;
 import com.firewolf.cont.contract.dto.gpt.GptResponseDto;
 import com.firewolf.cont.contract.entity.Contract;
 import com.firewolf.cont.contract.entity.ContractType;
+import com.firewolf.cont.contract.entity.Legality;
 import com.firewolf.cont.contract.repository.ContractRepository;
 import com.firewolf.cont.exception.CustomException;
 import com.firewolf.cont.user.entity.Member;
 import com.firewolf.cont.user.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import static com.firewolf.cont.exception.CustomErrorCode.NO_MEMBER_CONFIGURED_500;
+import static com.firewolf.cont.exception.CustomErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -42,25 +46,36 @@ public class ContractService {
     public String chatAndSave(Long memberId, ContractRequest contractRequest) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_CONFIGURED_500));
-        String compPrompt = make_variable_request(contractRequest.getContractType(), contractRequest.getPrompt());
-        System.out.println("compPrompt = " + compPrompt);
+        if(contractRequest.getPrompt().length()>1500)
+            throw new CustomException(EXCEEDED_CONTENT_LENGTH_400);
 
+        String compPrompt = make_variable_request(contractRequest.getContractType(), contractRequest.getPrompt());
         GptRequestDto request = new GptRequestDto(model, max_tokens, compPrompt);
         GptResponseDto response =  template.postForObject(apiURL, request, GptResponseDto.class);
+
         String content = response.getChoices().get(0).getMessage().getContent();
-//        if(content.contains("계약서 형식에 맞는 내용을 첨부해주세요"))
-//            throw new CustomException(BAD_REQUEST_400);
-        if (content.length() > 65535) {
-            content = content.substring(0, 65535);
-        }
-        contractRepository.save(Contract.builder()
+        if(content.contains("계약서 형식에 맞는 내용을 첨부해주세요"))
+            throw new CustomException(CONTRACT_FORMAT_ERROR_400);
+        JSONObject jsonObject = change_to_json(content);
+        Contract contract = Contract.builder()
                 .contractType(contractRequest.getContractType())
-                .isLegal(!content.contains("위법 의심"))
-                .request_prompt(contractRequest.getPrompt())
-                .response_content(content)
+                .legality(Legality.valueOf(
+                        ((String) ((JSONObject) jsonObject.get("result")).get("islegal")).toUpperCase()))
                 .member(member)
-                .build());
-        return content;
+                .build();
+        contract.addMember(member);
+        contractRepository.save(contract);
+        return jsonObject.toJSONString();
+    }
+
+    private JSONObject change_to_json(String content) {
+        JSONParser jsonParser = new JSONParser();
+        try {
+            return (JSONObject) jsonParser.parse(content);
+        }catch (ParseException e){
+            log.error("json parsing error: ",e);
+            throw new CustomException(JSON_PARSE_EXCEPTION_500);
+        }
     }
 
     private String make_variable_request(ContractType contractType, String prompt){

@@ -16,7 +16,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("loginPage")
-public class AccountController {
+public class LoginPageController {
 
     private final MemberService memberService;
 
