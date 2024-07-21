@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql-container
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 2512
+      MYSQL_DATABASE: firefox
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 2512
+      TZ: Asia/Seoul
+  spring-boot-app:
+    image: jinhyuntaek/firefox-img
+    container_name: spring-boot-container
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/firefox
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 2512
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect

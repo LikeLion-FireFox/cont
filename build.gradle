@@ -24,6 +24,7 @@ repositories {
 }
 
 dependencies {
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'	//Swagger
 	//Webflux
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
@@ -37,6 +38,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
 }
 
 tasks.named('test') {
