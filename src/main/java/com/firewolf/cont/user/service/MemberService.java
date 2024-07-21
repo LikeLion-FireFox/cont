@@ -19,8 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.firewolf.cont.exception.CustomErrorCode.NO_MEMBER_CONFIGURED_400;
-import static com.firewolf.cont.exception.CustomErrorCode.NO_MEMBER_CONFIGURED_500;
+import static com.firewolf.cont.exception.CustomErrorCode.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -33,6 +32,10 @@ public class MemberService {
 
     @Transactional
     public void save(SaveRequestDto saveRequest){
+        memberRepository.findByNickname(saveRequest.getNickname())
+                        .ifPresent(member -> {throw new CustomException(DUPLICATED_NICKNAME_400);});
+        memberRepository.findByAccountEmail(saveRequest.getEmail())
+                        .ifPresent(member -> {throw new CustomException(DUPLICATED_EMAIL_400);});
         memberRepository.save(Member.builder()
                 .accountEmail(saveRequest.getEmail())
                 .nickname(saveRequest.getNickname())
@@ -43,9 +46,7 @@ public class MemberService {
     }
 
     public void login(LoginRequestDto loginRequest, HttpServletRequest servletRequest){
-        memberRepository.findByAccountEmail(loginRequest.getEmail())
-                .orElseThrow(() ->new CustomException(NO_MEMBER_CONFIGURED_400));
-        Member member = memberRepository.findByPassword(loginRequest.getPassword())
+        Member member = memberRepository.findByAccountEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new CustomException(NO_MEMBER_CONFIGURED_400));
         HttpSession session = servletRequest.getSession(true);
         session.setAttribute("memberId",member.getId());

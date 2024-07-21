@@ -1,6 +1,7 @@
 package com.firewolf.cont.user.dto;
 
 import com.firewolf.cont.user.entity.Member;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -8,9 +9,12 @@ public class LoginDto {
 
     @Getter @Setter
     public static class LoginRequestDto{
+
+        @NotBlank
         @Size(min = 5, max = 30)
         private String email;
 
+        @NotBlank
         @Size(min = 5, max = 10)
         private String password;
     }
