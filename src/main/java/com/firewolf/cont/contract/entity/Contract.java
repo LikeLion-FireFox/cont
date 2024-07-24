@@ -4,21 +4,24 @@ import com.firewolf.cont.global.BaseEntity;
 import com.firewolf.cont.user.entity.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
+import static jakarta.persistence.InheritanceType.JOINED;
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Getter
-@Builder
+@SuperBuilder
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor
-public class Contract extends BaseEntity {
+@Inheritance(strategy = JOINED)
+@DiscriminatorColumn
+public abstract class Contract extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)

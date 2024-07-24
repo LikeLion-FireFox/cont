@@ -3,9 +3,8 @@ package com.firewolf.cont.contract.service;
 import com.firewolf.cont.contract.dto.ContractRequest;
 import com.firewolf.cont.contract.dto.gpt.GptRequestDto;
 import com.firewolf.cont.contract.dto.gpt.GptResponseDto;
-import com.firewolf.cont.contract.entity.Contract;
-import com.firewolf.cont.contract.entity.ContractType;
-import com.firewolf.cont.contract.entity.Legality;
+import com.firewolf.cont.contract.entity.*;
+import com.firewolf.cont.contract.entity.dto.ChatForm;
 import com.firewolf.cont.contract.repository.ContractRepository;
 import com.firewolf.cont.exception.CustomException;
 import com.firewolf.cont.user.entity.Member;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import static com.firewolf.cont.contract.entity.dto.ChatForm.toDto;
 import static com.firewolf.cont.exception.CustomErrorCode.*;
 
 @Service
@@ -57,15 +57,41 @@ public class ContractService {
         if(content.contains("계약서 형식에 맞는 내용을 첨부해주세요"))
             throw new CustomException(CONTRACT_FORMAT_ERROR_400);
         JSONObject jsonObject = change_to_json(content);
-        Contract contract = Contract.builder()
-                .contractType(contractRequest.getContractType())
-                .legality(Legality.valueOf(
-                        ((String) ((JSONObject) jsonObject.get("result")).get("islegal")).toUpperCase()))
-                .member(member)
-                .build();
+        saveContractByContractType(contractRequest,jsonObject, member);
+        return jsonObject.toJSONString();
+    }
+
+    private void saveContractByContractType(ContractRequest request, JSONObject jsonObject, Member member) {
+        Legality legality = Legality.valueOf(
+                ((String) ((JSONObject) jsonObject.get("result")).get("isLegal")).toUpperCase());
+        Contract contract = null;
+        switch (request.getContractType()){
+            case EMPLOYMENT ->
+                    contract = EmploymentContract.builder()
+                            .contractType(contract.getContractType())
+                            .legality(legality)
+                            .member(member)
+                            .wage(toDto((JSONObject) jsonObject.get("wage")))
+                            .working_hours(toDto((JSONObject) jsonObject.get("working_hours")))
+                            .holiday(toDto((JSONObject) jsonObject.get("holiday")))
+                            .annual_vacation(toDto((JSONObject) jsonObject.get("annual_vacation")))
+                            .working_place(toDto((JSONObject) jsonObject.get("working_place")))
+                            .assigned_task(toDto((JSONObject) jsonObject.get("assigned_task")))
+                            .build();
+            case PROPERTY ->
+                    contract = PropertyContract.builder()
+                            .contractType(contract.getContractType())
+                            .legality(legality)
+                            .member(member)
+                            .property_detail(toDto((JSONObject)jsonObject.get("property_detail")))
+                            .contract_content(toDto((JSONObject)jsonObject.get("contract_content")))
+                            .special_data(toDto((JSONObject)jsonObject.get("special_data")))
+                            .personal_data(toDto((JSONObject)jsonObject.get("personal_data")))
+                            .build();
+            default -> throw new CustomException(CONTRACT_TYPE_ERROR_400);
+        }
         contract.addMember(member);
         contractRepository.save(contract);
-        return jsonObject.toJSONString();
     }
 
     private JSONObject change_to_json(String content) {
@@ -87,39 +113,59 @@ public class ContractService {
                     .append("""
                             {wage":
                                 {
-                                    "islegal" : "danger",
+                                    "isLegal" : "danger",
                                     "description" : "..."
                                 },
                                 "working_hours":
                                 {
-                                    "islegal" : "legal",
+                                    "isLegal" : "legal",
                                     "description" : "..."
                                 },
                                 "holiday":{
-                                    "islegal" : "illegal",
+                                    "isLegal" : "illegal",
                                     "description" : "..."
                                 },
                                 "annual_vacation":{
-                                    "islegal" : "legal",
+                                    "isLegal" : "legal",
                                     "description" : "..."
                                 },
                                 "working_place":{
-                                    "islegal" : "illegal",
+                                    "isLegal" : "illegal",
                                     "description" : "..."
                                 },
                                 "assigned_task":{
-                                    "islegal" : "legal",
+                                    "isLegal" : "legal",
                                     "description" : "..."
                                 },
                                 "result":{
-                                "islegal" : "danger"
+                                "isLegal" : "danger"
                                 }
-                            }""").append("와 같은 형식으로 islegal은 합법이면 legal, 의심스러우면 danger," +
-                            "위법이면 illegal 그리고 description에 해당 항목의 결과가 왜 합법/의심/위법인지 " +
-                            "최대 2줄로 작성해주고 result는 너가 내린 최종 결론(합법/의심/위법)");
-            case PROPERTY -> sb.append("구체적인 부동산의 위치, 계약 내용에 기재된 모든 거래대금, 특약사항에 내용");
+                            }""");
+            case PROPERTY -> sb.append("""
+                    구체적인 부동산의 위치, 계약 내용에 기재된 모든 거래대금, 특약사항, 인적 사항에 내용이 순서대로 각각 {
+                        "property_detail": {
+                            "isLegal" : "danger",
+                            "description" : "..."
+                         },
+                        "contract_content": {
+                             "isLegal" : "legal",
+                             "description" : "..."
+                         },
+                         "special_data":{
+                              "isLegal" : "illegal",
+                              "description" : "..."
+                         },
+                         "personal_data":{
+                            "isLegal" : "legal",
+                            "description" : "..."
+                         },
+                        "result":"danger"
+                    }""");
         }
-        sb.append("만약 계약서가 아닌 내용이면, '계약서 형식에 맞는 내용을 첨부해주세요' 라고 응답을 줘");
+        sb.append("에 대응되는 json 형식으로 isLegal은 합법이면 legal, 의심스러우면 danger," +
+                "위법이면 illegal 그리고 description에 해당 항목의 결과가 왜 합법/의심/위법인지 " +
+                "최대 2줄로 작성해주고 result는 너가 내린 최종 결론(합법/의심/위법), " +
+                "만약 계약서가 아닌 내용이면, '계약서 형식에 맞는 내용을 첨부해주세요' 라고 응답을 줘");
         return sb.toString();
     }
 

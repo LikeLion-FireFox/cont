@@ -4,6 +4,7 @@ import com.firewolf.cont.contract.entity.Contract;
 import com.firewolf.cont.global.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import static lombok.AccessLevel.PROTECTED;
 
 @Entity
 @Getter
-@Builder
+@SuperBuilder
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor
 public class Member extends BaseEntity {
