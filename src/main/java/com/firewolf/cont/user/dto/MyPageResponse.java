@@ -1,7 +1,7 @@
 package com.firewolf.cont.user.dto;
 
 import com.firewolf.cont.contract.entity.Contract;
-import com.firewolf.cont.contract.entity.ContractType;
+import com.firewolf.cont.contract.entity.enumtype.ContractType;
 import com.firewolf.cont.contract.entity.Legality;
 import com.firewolf.cont.user.entity.Member;
 import lombok.*;
