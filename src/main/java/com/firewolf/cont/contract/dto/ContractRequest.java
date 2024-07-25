@@ -1,6 +1,6 @@
 package com.firewolf.cont.contract.dto;
 
-import com.firewolf.cont.contract.entity.ContractType;
+import com.firewolf.cont.contract.entity.enumtype.ContractType;
 import lombok.*;
 
 @Getter @Setter
