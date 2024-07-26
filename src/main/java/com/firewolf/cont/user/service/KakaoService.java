@@ -127,7 +127,6 @@ public class KakaoService {
         StringBuilder sb = new StringBuilder();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         sb.append((account.get("birthyear"))).append((account.get("birthday")));
-        log.info("birthday = {}",sb);
 
         HttpSession session = servletRequest.getSession(true);
         Optional<Member> optionalMember = memberRepository.findByKakaoId(id);

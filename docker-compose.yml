@@ -15,7 +15,7 @@ services:
     image: jinhyuntaek/firefox-img
     container_name: spring-boot-container
     ports:
-      - "8081:8080"
+      - "8080:8080"
     depends_on:
       - mysql
     environment:
