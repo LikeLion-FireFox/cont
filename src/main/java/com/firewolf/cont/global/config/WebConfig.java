@@ -2,11 +2,23 @@ package com.firewolf.cont.global.config;
 
 import com.firewolf.cont.interceptor.LoginCheckInterceptor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedHeaders("Authorization", "Content-Type")
+                .exposedHeaders("Custom-Header")
+                .allowCredentials(true)
+                .maxAge(3600);
+    }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
