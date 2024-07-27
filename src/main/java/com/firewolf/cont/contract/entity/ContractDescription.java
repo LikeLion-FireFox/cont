@@ -1,9 +1,11 @@
 package com.firewolf.cont.contract.entity;
 
+import com.firewolf.cont.global.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.json.simple.JSONObject;
 
+import static jakarta.persistence.EnumType.STRING;
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -13,7 +15,7 @@ import static lombok.AccessLevel.PROTECTED;
 @AllArgsConstructor
 @Builder
 @Entity
-public class ContractDescription {
+public class ContractDescription extends BaseEntity {
 
     @Id @GeneratedValue(strategy = IDENTITY)
     @Column(name = "contract_description_id")
@@ -25,6 +27,7 @@ public class ContractDescription {
 
     private String field;
 
+    @Enumerated(STRING)
     private Legality legality;
 
     private String description;

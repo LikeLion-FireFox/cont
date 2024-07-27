@@ -78,15 +78,25 @@ public class ContractService {
         contract.addMember(member);
         switch (request.getContractType()){
             case EMPLOYMENT -> {
-                for (Employment employment : Employment.values()) {
-                    JSONObject field = (JSONObject) jsonObject.get(employment.name().toLowerCase());
-                    contract.addContractDescription(toEntity(contract,field.toString(),field));
+                for (Object object : jsonObject.keySet()) {
+                    String key = (String) object;
+                    for (Employment employment : Employment.values()) {
+                        if(key.equals(employment.name().toLowerCase())) {
+                            JSONObject field = (JSONObject) jsonObject.get(key);
+                            contract.addContractDescription(toEntity(contract, key, field));
+                        }
+                    }
                 }
             }
             case REAL_ESTATE -> {
-                for(RealEstate realEstate : RealEstate.values()){
-                    JSONObject field = (JSONObject) jsonObject.get(realEstate.name().toLowerCase());
-                    contract.addContractDescription(toEntity(contract,field.toString(),field));
+                for (Object object : jsonObject.keySet()) {
+                    String key = (String) object;
+                    for (RealEstate realEstate : RealEstate.values()) {
+                        if(key.equals(realEstate.name().toLowerCase())) {
+                            JSONObject field = (JSONObject) jsonObject.get(key);
+                            contract.addContractDescription(toEntity(contract, key, field));
+                        }
+                    }
                 }
             }
             default -> {
