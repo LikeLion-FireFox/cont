@@ -56,6 +56,7 @@ public class ContractService {
             throw new CustomException(EXCEEDED_CONTENT_LENGTH_400);
 
         String compPrompt = make_variable_request(contractRequest.getContractType(), contractRequest.getPrompt());
+        log.info("to gpt prompt = {}",compPrompt);
         GptRequestDto request = new GptRequestDto(model, max_tokens, compPrompt);
         GptResponseDto response =  template.postForObject(apiURL, request, GptResponseDto.class);
 
@@ -174,8 +175,8 @@ public class ContractService {
         }
         sb.append("에 대응되는 json 형식으로 isLegal은 합법이면 legal, 의심스러우면 danger," +
                 "위법이면 illegal 그리고 description에 해당 항목의 결과가 왜 합법/의심/위법인지 " +
-                "최대 2줄로 작성해주고 result는 너가 내린 종합적인 결론(legal/danger/illegal), " +
-                "만약 해당 계약서에 부합하지 않는 내용이면, '계약서 형식에 맞는 내용을 첨부해주세요' 라고 응답을 줘");
+                "최대 2줄로 작성해주고 result는 너가 내린 종합적인 결론(legal/danger/illegal)\n" +
+                "마지막으로, 만약 해당 계약서에 부합하지 않는 내용이면, 앞에꺼 다 필요없고 '계약서 형식에 맞는 내용을 첨부해주세요' 라고 응답을 줘");
         return sb.toString();
     }
 

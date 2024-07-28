@@ -31,4 +31,4 @@ logging:
 #kakao
 kakao:
   client_id: b182ecd9e6b3167982c8a6214f6fe9a8
-  redirect_uri: http://localhost:8080/mainPage
+  redirect_uri: http://localhost:5173/mainPage
