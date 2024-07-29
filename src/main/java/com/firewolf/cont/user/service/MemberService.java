@@ -45,11 +45,13 @@ public class MemberService {
                 .build());
     }
 
+    @Transactional
     public void login(LoginRequestDto loginRequest, HttpServletRequest servletRequest){
         Member member = memberRepository.findByAccountEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new CustomException(NO_MEMBER_CONFIGURED_400));
         HttpSession session = servletRequest.getSession(true);
         session.setAttribute("memberId",member.getId());
+        log.info("Login successful, session memberId: {}", session.getAttribute("memberId"));
     }
 
     public MyPageResponse myPage(Long memberId, Pageable pageable){
