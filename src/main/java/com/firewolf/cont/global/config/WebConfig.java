@@ -12,8 +12,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns("*")
-                .allowedMethods("GET", "POST")
+                .allowedOrigins("http://localhost:5173")
+                .allowedMethods("*")
+                .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);
     }
@@ -24,7 +25,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .order(1)
                 .addPathPatterns("/**")
                 .excludePathPatterns("/","/js/**", "/css/**", "/images/**","/error","/favicon.ico",
-                        "/loginPage/**","/mainPage/logout",
+                        "/loginPage/**","/mainPage","/mainPage/logout",
                         "/swagger-ui/**", "/swagger-resources/**","/v3/api-docs/**","/api-docs/**",
                         "/webjars/**");
     }

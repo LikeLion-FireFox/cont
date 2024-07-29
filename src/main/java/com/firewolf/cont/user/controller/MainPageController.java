@@ -37,11 +37,10 @@ public class MainPageController {
     ) throws Exception {
         if(request.getParameter("code")!=null)
             return ResponseEntity.ok().body(kakaoService.getKakaoInfo(request.getParameter("code"),request));
-//        else if(request.getParameter("code")==null && memberId == null) { //로그인 되지 않은 회원
-//            log.info("혹시 여기에 로그가 찍히나요?");
-//            servletResponse.sendRedirect("/loginPage");
-//            return null;
-//        }
+        else if(request.getParameter("code")==null && memberId == null) { //로그인 되지 않은 회원
+            servletResponse.sendRedirect("/loginPage");
+            return null;
+        }
         else // 카카오 아닌 회원
             return ResponseEntity.ok().body(memberService.getMemberInfo(memberId));
     }
