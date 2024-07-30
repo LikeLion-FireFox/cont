@@ -55,7 +55,7 @@ public class MainPageController {
             return ResponseEntity.ok().body(memberService.getMemberInfo(memberId));
     }
 
-    @Operation(summary = "로그 아웃",description = "세션 정보 삭제, /loginPage로 리다이렉션")
+    @Operation(summary = "로그 아웃",description = "세션 정보 삭제")
     @PostMapping("/logout")
     public ResponseEntity<Map<String,String>> logout(
             HttpServletRequest servletRequest,

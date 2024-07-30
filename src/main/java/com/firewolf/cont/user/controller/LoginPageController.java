@@ -46,7 +46,7 @@ public class LoginPageController {
                 .body(response);
     }
 
-    @Operation(summary = "로그인(카카오 x)", description = "로그인 성공 => /mainPage로 리다이렉션")
+    @Operation(summary = "로그인(카카오 x)")
     @PostMapping("")
     public ResponseEntity<Map<String,String>> login(@RequestBody @Valid LoginRequestDto loginRequest,
                       HttpServletRequest servletRequest)  {
@@ -62,7 +62,7 @@ public class LoginPageController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "회원가입(카카오 x)",description = "회원가입 성공 => /loginPage로 리다이렉션")
+    @Operation(summary = "회원가입(카카오 x)")
     @PostMapping("/save")
     public ResponseEntity<Map<String,String>> save(@RequestBody @Valid SaveRequestDto saveRequest) {
         memberService.save(saveRequest);
