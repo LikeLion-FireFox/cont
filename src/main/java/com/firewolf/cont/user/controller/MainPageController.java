@@ -9,10 +9,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,42 +28,48 @@ public class MainPageController {
     private final KakaoService kakaoService;
     private final MemberService memberService;
 
-    /*이 쪽으로 redirect => 카카오 서버로부터 로그인 정보 가져오고, 일부 정보 반환
-    request.getparam 으로 카카오 서버로부터 redirect 시에 발급되는 인가 코드 => 이를 세션 속성에 넣기
+    /*
+    request.getparam 으로 카카오 서버로부터 redirect 시에 발급되는 인가 코드 => 이를 세션 속성에 넣음 (카카오 로그 아웃)
     */
-    @Operation(summary = "메인 페이지",description =
-            "1. 카카오로 로그인 or 회원 가입 (성공) 시 이 페이지로 리다이렉션\n" +
-                    "2. 카카오 아닌 회원은 로그인(성공) 시 이 페이지로 리다이렉션")
+    @Operation(summary = "카카오 로그인(or +회원 가입) post 요청",
+            description = "querystring code 필수, 로그인 성공 후 프론트에서 mainPage로 redirect 필요")
+    @PostMapping("/kakao")
+    public ResponseEntity<Map<String,String>> loginKakao(
+            @RequestParam("code") String code,
+            HttpServletRequest request
+    ) {
+        AtomicReference<Boolean> isNew = new AtomicReference<>();
+        kakaoService.addKakaoInfo(code,request,isNew);
+        HashMap<String, String> response = new HashMap<>();
+        response.put("message","카카오 로그인 성공");
+        if(isNew.get())
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @Operation(summary = "메인 페이지",description = "이미 로그인 된(쿠키가 존재하는) 회원")
     @GetMapping("")
     public ResponseEntity<LoginResponseDto> mainPage(
-            HttpServletRequest request,
-            HttpServletResponse servletResponse,
-            @SessionAttribute(name = "memberId", required = false) Long memberId
-    ) throws Exception {
-        if(request.getParameter("code")!=null)
-            return ResponseEntity.ok().body(kakaoService.getKakaoInfo(request.getParameter("code"),request));
-        else if(request.getParameter("code")==null && memberId == null) { //로그인 되지 않은 회원
-            servletResponse.sendRedirect("/loginPage");
-            return null;
-        }
-        else // 카카오 아닌 회원
+            @SessionAttribute(name = "memberId") Long memberId
+    ) {
             return ResponseEntity.ok().body(memberService.getMemberInfo(memberId));
     }
 
     @Operation(summary = "로그 아웃",description = "세션 정보 삭제, /loginPage로 리다이렉션")
     @PostMapping("/logout")
-    public void logout(
+    public ResponseEntity<Map<String,String>> logout(
             HttpServletRequest servletRequest,
-            HttpServletResponse servletResponse,
             @SessionAttribute(name = "memberId") Long memberId,
             @SessionAttribute(name = "kakaoToken", required = false) String kakaoToken
-    ) throws IOException {
+    ) {
+        HashMap<String, String> response = new HashMap<>();
         HttpSession session = servletRequest.getSession(false);
         if(memberService.isKakaoUser(memberId)) {
             kakaoService.logout(kakaoToken);
             session.removeAttribute("kakaoToken");
         }
         session.removeAttribute("memberId"); // common (kakao user, nonkakao user)
-        servletResponse.sendRedirect("/loginPage");
+        response.put("message","로그 아웃 성공");
+        return ResponseEntity.ok().body(response);
     }
 }

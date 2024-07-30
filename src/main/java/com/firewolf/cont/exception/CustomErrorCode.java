@@ -18,7 +18,8 @@ public enum CustomErrorCode {
     JSON_PARSE_EXCEPTION_500("JSON 객체 변환 오류",INTERNAL_SERVER_ERROR),
 
     //kakao
-    KAKAO_API_CALL_FAILED("카카오 로그인 API 오류",BAD_REQUEST),
+    KAKAO_API_CALL_FAILED("인가되지 않은 code 요청",BAD_REQUEST),
+    NO_KAKAO_CODE_CONFIGURED("카카오 인가 코드 발급 필요",BAD_REQUEST),
     //member
     NO_MEMBER_CONFIGURED_400("회원 식별 불가", BAD_REQUEST),
     NO_MEMBER_CONFIGURED_500("회원 식별 불가", INTERNAL_SERVER_ERROR),

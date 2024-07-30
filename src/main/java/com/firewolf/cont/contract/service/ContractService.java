@@ -49,7 +49,7 @@ public class ContractService {
     private final MemberRepository memberRepository;
 
     @Transactional
-    public String chatAndSave(Long memberId, ContractRequest contractRequest) {
+    public JSONObject chatAndSave(Long memberId, ContractRequest contractRequest) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(NO_MEMBER_CONFIGURED_500));
         if(contractRequest.getPrompt().length()>1500)
@@ -65,7 +65,7 @@ public class ContractService {
             throw new CustomException(CONTRACT_FORMAT_ERROR_400);
         JSONObject jsonObject = change_to_json(content);
         saveContractByContractType(contractRequest,jsonObject, member);
-        return jsonObject.toJSONString();
+        return jsonObject;
     }
 
     private void saveContractByContractType(ContractRequest request, JSONObject jsonObject, Member member) {

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firewolf.cont.exception.CustomException;
-import com.firewolf.cont.user.dto.LoginDto.LoginResponseDto;
 import com.firewolf.cont.user.entity.Member;
 import com.firewolf.cont.user.repository.MemberRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,8 +26,9 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static com.firewolf.cont.exception.CustomErrorCode.KAKAO_API_CALL_FAILED;
+import static com.firewolf.cont.exception.CustomErrorCode.*;
 import static java.lang.Boolean.TRUE;
 
 @Service
@@ -56,8 +56,8 @@ public class KakaoService {
     }
 
     @Transactional
-    public LoginResponseDto getKakaoInfo(String code, HttpServletRequest servletRequest) throws Exception {
-        if (code == null) throw new Exception("Failed get authorization code");
+    public void addKakaoInfo(String code, HttpServletRequest servletRequest, AtomicReference<Boolean> isNew) {
+        if (code == null) throw new CustomException(NO_KAKAO_CODE_CONFIGURED);
 
         String accessToken = "";
 //        String refreshToken = "";
@@ -92,14 +92,14 @@ public class KakaoService {
             accessToken  = (String) jsonObj.get("access_token");
 //            refreshToken = (String) jsonObj.get("refresh_token");
         } catch (Exception e) {
-            log.info("kakao exception",e);
+            log.info("kakao login api call exception",e);
             throw new CustomException(KAKAO_API_CALL_FAILED);
         }
 
-        return getUserInfoWithToken(accessToken,servletRequest);
+        setUserInfoWithToken(accessToken,servletRequest,isNew);
     }
 
-    private LoginResponseDto getUserInfoWithToken(String accessToken,HttpServletRequest servletRequest) throws Exception {
+    private void setUserInfoWithToken(String accessToken, HttpServletRequest servletRequest,AtomicReference<Boolean> isNew) {
         //HttpHeader 생성
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + accessToken);
@@ -117,7 +117,13 @@ public class KakaoService {
 
         //Kakao Server 로부터 오는 Response 데이터 파싱
         JSONParser jsonParser = new JSONParser();
-        JSONObject jsonObj = (JSONObject) jsonParser.parse(response.getBody());
+        JSONObject jsonObj = null;
+        try {
+            jsonObj = (JSONObject) jsonParser.parse(response.getBody());
+        }catch (Exception e){
+            log.info("json parse exception",e);
+            throw new CustomException(JSON_PARSE_EXCEPTION_500);
+        }
         JSONObject account = (JSONObject) jsonObj.get("kakao_account");
         JSONObject profile = (JSONObject) account.get("profile");
 
@@ -131,6 +137,9 @@ public class KakaoService {
 
         HttpSession session = servletRequest.getSession(true);
         Optional<Member> optionalMember = memberRepository.findByKakaoId(id);
+        if(optionalMember.isEmpty()) {
+            isNew.set(true);
+        }
         Member member = optionalMember.orElseGet(() ->
                 memberRepository.save(Member.builder()
                         .kakaoId(id)
@@ -144,14 +153,14 @@ public class KakaoService {
         session.setAttribute("kakaoToken",accessToken);
         session.setAttribute("memberId", member.getId());
         log.info("session attributes = {}",session.getAttributeNames());
-        return LoginResponseDto.builder()
-                .id(member.getId())
-                .nickname(nickname)
-                .build();
+//        return LoginResponseDto.builder()
+//                .id(member.getId())
+//                .nickname(nickname)
+//                .build();
     }
 
 
-    public void logout(String accessToken) throws JsonProcessingException {
+    public void logout(String accessToken)  {
         // HTTP Header 생성
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + accessToken);
@@ -166,14 +175,5 @@ public class KakaoService {
                 kakaoLogoutRequest,
                 String.class
         );
-
-
-        // kakao server 로부터 받은 responseBody 정보 (test용)
-        String responseBody = response.getBody();
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = objectMapper.readTree(responseBody);
-
-        Long id = jsonNode.get("id").asLong();
-        log.info("반환 id = {}",id);
     }
 }

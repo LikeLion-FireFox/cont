@@ -8,10 +8,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.JSONObject;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("chat")
@@ -27,28 +31,28 @@ public class ChatController {
     }
 
     @Operation(summary = "계약서 검토",
-            description = " case 1)계약서 검토 완료 => /chat/chatResultPage로 리다이렉션\n" +
-                    "case 2) 계약서 형식이 아닌 파일 => 예외 발생(message = 계약서 형식이 아닌 파일, status = BAD_REQUEST)")
+            description = "계약서 형식이 아닌 파일 => 예외 발생(message = 계약서 형식이 아닌 파일, status = BAD_REQUEST)")
     @PostMapping("")
-    public void chat(
+    public ResponseEntity<Map<String,String>> chat(
             @SessionAttribute("memberId") Long memberId,
             @RequestBody ContractRequest contractRequest,
-            HttpServletRequest servletRequest,
-            HttpServletResponse servletResponse
-    ) throws IOException {
-        String chatResponse = contractService.chatAndSave(memberId, contractRequest);
+            HttpServletRequest servletRequest
+    ) {
+        JSONObject chatResponse = contractService.chatAndSave(memberId, contractRequest);
         HttpSession chatResponseSession = servletRequest.getSession();
         chatResponseSession.setAttribute("chatResponse",chatResponse);
-        servletResponse.sendRedirect("/chat/chatResultPage");
+        HashMap<String, String> response = new HashMap<>();
+        response.put("message","계약서 저장 완료");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "계약서 검토 결과")
     @GetMapping("/chatResultPage")
-    public ResponseEntity<String> chatResultPage(
+    public ResponseEntity<JSONObject> chatResultPage(
             HttpServletRequest servletRequest
     ){
         HttpSession session = servletRequest.getSession();
-        String chatResponse = (String) session.getAttribute("chatResponse");
+        JSONObject chatResponse = (JSONObject) session.getAttribute("chatResponse");
         session.removeAttribute("chatResponse");
         return ResponseEntity.ok().body(chatResponse);
     }
