@@ -36,6 +36,16 @@ public class LoginPageController {
                 .body(response);
     }
 
+    @Operation(summary = "로그인(카카오 x)")
+    @PostMapping("")
+    public ResponseEntity<Map<String,String>> login(@RequestBody @Valid LoginRequestDto loginRequest,
+                                                    HttpServletRequest servletRequest)  {
+        memberService.login(loginRequest, servletRequest);
+        HashMap<String, String> response = new HashMap<>();
+        response.put("message","로그인 성공");
+        return ResponseEntity.ok().body(response);
+    }
+
     @Operation(summary = "회원가입 시 이메일 중복 체크")
     @GetMapping("/save/checkEmail")
     public ResponseEntity<Map<String,Boolean>> checkEmail(@RequestParam("email") String email){
@@ -44,16 +54,6 @@ public class LoginPageController {
         response.put("status",isExist);
         return ResponseEntity.ok()
                 .body(response);
-    }
-
-    @Operation(summary = "로그인(카카오 x)")
-    @PostMapping("")
-    public ResponseEntity<Map<String,String>> login(@RequestBody @Valid LoginRequestDto loginRequest,
-                      HttpServletRequest servletRequest)  {
-        memberService.login(loginRequest, servletRequest);
-        HashMap<String, String> response = new HashMap<>();
-        response.put("message","로그인 성공");
-        return ResponseEntity.ok().body(response);
     }
 
     @Operation(summary = "회원가입 페이지")
