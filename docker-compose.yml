@@ -4,7 +4,7 @@ services:
     image: mysql:latest
     container_name: mysql-container
     ports:
-      - "3307:3306"
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: 2512
       MYSQL_DATABASE: firefox
@@ -12,7 +12,7 @@ services:
       MYSQL_PASSWORD: 2512
       TZ: Asia/Seoul
   spring-boot-app:
-    image: jinhyuntaek/firefox-img
+    image: jinhyuntaek/firefox-img-dist
     container_name: spring-boot-container
     ports:
       - "8080:8080"
