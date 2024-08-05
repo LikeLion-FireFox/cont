@@ -26,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.firewolf.cont.exception.CustomErrorCode.*;
@@ -56,7 +57,7 @@ public class KakaoService {
     }
 
     @Transactional
-    public void addKakaoInfo(String code, HttpServletRequest servletRequest, AtomicReference<Boolean> isNew) {
+    public void addKakaoInfo(String code, HttpServletRequest servletRequest, AtomicBoolean isNew) {
         if (code == null) throw new CustomException(NO_KAKAO_CODE_CONFIGURED);
 
         String accessToken = "";
@@ -99,7 +100,7 @@ public class KakaoService {
         setUserInfoWithToken(accessToken,servletRequest,isNew);
     }
 
-    private void setUserInfoWithToken(String accessToken, HttpServletRequest servletRequest,AtomicReference<Boolean> isNew) {
+    private void setUserInfoWithToken(String accessToken, HttpServletRequest servletRequest,AtomicBoolean isNew) {
         //HttpHeader 생성
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + accessToken);

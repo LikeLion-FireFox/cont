@@ -19,6 +19,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("mainPage")
@@ -38,7 +41,7 @@ public class MainPageController {
             @RequestParam("code") String code,
             HttpServletRequest request
     ) {
-        AtomicReference<Boolean> isNew = new AtomicReference<>();
+        AtomicBoolean isNew = new AtomicBoolean(false);
         kakaoService.addKakaoInfo(code,request,isNew);
         HashMap<String, String> response = new HashMap<>();
         response.put("message","카카오 로그인 성공");
