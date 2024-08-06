@@ -77,7 +77,7 @@ public class BasicExceptionAdvice {
             Exception ex
     ){
         log.error("ex = {}",ex.getMessage());
-        log.error("detail message = ",ex);
+//        log.error("detail message = ",ex);
         BasicErrorResponse response = BasicErrorResponse.builder()
                 .errorMessage(ex.getMessage())
                 .status(HttpStatus.NOT_FOUND)
